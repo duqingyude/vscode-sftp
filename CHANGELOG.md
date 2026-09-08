@@ -1,3 +1,8 @@
+## 1.16.9 - 2026-09-08
+* Compliance: add SECURITY.md, PRIVACY.md, NOTICE.md for Marketplace policy compliance.
+* Security: upgrade joi to v17.x (fixes hoek/topo prototype-pollution high advisory).
+* Security: upgrade tmp to v0.2.7 (fixes symlink-write + path-traversal high advisories).
+
 ## 1.16.8 - 2026-08-08
 * Set package homepage to https://khoazero123.com/ for Open VSX / Cursor marketplace verification.
 

@@ -117,7 +117,7 @@ interface TransferScheduler {
   stop(): void;
 }
 
-type ConfigValidator = (x: any) => { message: string };
+type ConfigValidator = (x: any) => any;
 
 const DEFAULT_SSHCONFIG_FILE = '~/.ssh/config';
 

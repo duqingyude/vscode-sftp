@@ -75,7 +75,7 @@ describe("validation config", () => {
       ],
     };
 
-    const result = Joi.validate(config, configScheme, {
+    const result = Joi.object(configScheme).validate(config, {
       convert: false,
     });
     expect(result.error).toBe(null);
@@ -101,13 +101,13 @@ describe("validation config", () => {
       ],
     };
 
-    let result = Joi.validate(config, configScheme, {
+    let result = Joi.object(configScheme).validate(config, {
       convert: false,
     });
     expect(result.error).toBe(null);
 
     delete config.watcher;
-    result = Joi.validate(config, configScheme, {
+    result = Joi.object(configScheme).validate(config, {
       convert: false,
     });
     expect(result.error).toBe(null);
@@ -144,7 +144,7 @@ describe("validation config", () => {
         ],
       };
 
-      const result = Joi.validate(config, configScheme, {
+      const result = Joi.object(configScheme).validate(config, {
         convert: false,
       });
       expect(result.error).not.toBe(null);
@@ -180,31 +180,31 @@ describe("validation config", () => {
         ],
       };
 
-      let result = Joi.validate(config, configScheme, {
+      let result = Joi.object(configScheme).validate(config, {
         convert: false,
       });
       expect(result.error).toBe(null);
 
       config.watcher.files = '**/*.js';
-      result = Joi.validate(config, configScheme, {
+      result = Joi.object(configScheme).validate(config, {
         convert: false,
       });
       expect(result.error).toBe(null);
 
       config.watcher.files = null;
-      result = Joi.validate(config, configScheme, {
+      result = Joi.object(configScheme).validate(config, {
         convert: false,
       });
       expect(result.error).toBe(null);
 
       config.watcher.files = true;
-      result = Joi.validate(config, configScheme, {
+      result = Joi.object(configScheme).validate(config, {
         convert: false,
       });
       expect(result.error).not.toBe(null);
 
       delete config.watcher;
-      result = Joi.validate(config, configScheme, {
+      result = Joi.object(configScheme).validate(config, {
         convert: false,
       });
       expect(result.error).toBe(null);
@@ -240,13 +240,13 @@ describe("validation config", () => {
         ],
       };
 
-      let result = Joi.validate(config, configScheme, {
+      let result = Joi.object(configScheme).validate(config, {
         convert: false,
       });
       expect(result.error).not.toBe(null);
 
       config.ignore = [];
-      result = Joi.validate(config, configScheme, {
+      result = Joi.object(configScheme).validate(config, {
         convert: false,
       });
       expect(result.error).toBe(null);
@@ -282,13 +282,13 @@ describe("validation config", () => {
         ],
       };
 
-      let result = Joi.validate(config, configScheme, {
+      let result = Joi.object(configScheme).validate(config, {
         convert: false,
       });
       expect(result.error).toBe(null);
 
       config.passphrase = false;
-      result = Joi.validate(config, configScheme, {
+      result = Joi.object(configScheme).validate(config, {
         convert: false,
       });
       expect(result.error).not.toBe(null);

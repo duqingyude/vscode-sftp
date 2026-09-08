@@ -126,14 +126,9 @@ function getConfigPath(basePath) {
 }
 
 export function validateConfig(config) {
-  const { error } = Joi.validate(config, configScheme, {
+  const { error } = Joi.object(configScheme).validate(config, {
     allowUnknown: true,
     convert: false,
-    language: {
-      object: {
-        child: '!!prop "{{!child}}" fails because {{reason}}',
-      },
-    },
   });
   return error;
 }
