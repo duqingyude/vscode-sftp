@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as l10n from '@vscode/l10n';
 import { showTextDocument } from '../../host';
 import {
   upath,
@@ -125,7 +126,7 @@ export default class RemoteTreeData
               ? COMMAND_REMOTEEXPLORER_EDITINLOCAL
               : COMMAND_REMOTEEXPLORER_VIEW_CONTENT,
             arguments: [item],
-            title: 'View Remote Resource',
+            title: l10n.t('View Remote Resource'),
           },
     };
   }
@@ -137,7 +138,7 @@ export default class RemoteTreeData
 
     const root = this.findRoot(item.resource.uri);
     if (!root) {
-      throw new Error(`Can't find config for remote resource ${item.resource.uri}.`);
+      throw new Error(l10n.t("Can't find config for remote resource {0}.", item.resource.uri));
     }
     const config = root.explorerContext.config;
     const remotefs = await root.explorerContext.fileService.getRemoteFileSystem(config);
@@ -182,7 +183,7 @@ export default class RemoteTreeData
     const resourceUri = item.resource.uri;
     const root = this.findRoot(resourceUri);
     if (!root) {
-      throw new Error(`Can't find config for remote resource ${resourceUri}.`);
+      throw new Error(l10n.t("Can't find config for remote resource {0}.", resourceUri));
     }
 
     if (item.resource.fsPath === root.resource.fsPath) {
@@ -222,7 +223,7 @@ export default class RemoteTreeData
   ): Promise<string> {
     const root = this.findRoot(uri);
     if (!root) {
-      throw new Error(`Can't find remote for resource ${uri}.`);
+      throw new Error(l10n.t("Can't find remote for resource {0}.", uri));
     }
 
     const config = root.explorerContext.config;

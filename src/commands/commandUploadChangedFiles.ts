@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as l10n from '@vscode/l10n';
 import * as path from 'path';
 import { COMMAND_UPLOAD_CHANGEDFILES } from '../constants';
 import { getFileService } from '../modules/serviceManager';
@@ -161,7 +162,7 @@ async function getRepository(git: GitAPI): Promise<Repository | undefined> {
     };
   });
 
-  const pick = await vscode.window.showQuickPick(picks, { placeHolder: 'Choose a repository' });
+  const pick = await vscode.window.showQuickPick(picks, { placeHolder: l10n.t('Choose a repository') });
 
   return pick && pick.repository;
 }

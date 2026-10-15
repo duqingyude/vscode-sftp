@@ -1,3 +1,4 @@
+import * as l10n from '@vscode/l10n';
 import FileSystem, { FileOption } from './fileSystem';
 import { RemoteClient, ConnectOption, RemoteClientConfig } from '../remote-client';
 
@@ -35,7 +36,7 @@ export default abstract class RemoteFileSystem extends FileSystem {
     } else if (clientOption) {
       this.client = this._createClient(clientOption);
     } else {
-      throw new Error('No client or clientOption is provided');
+      throw new Error(l10n.t('No client or clientOption is provided'));
     }
 
     this.setRemoteTimeOffsetInHours(remoteTimeOffsetInHours);

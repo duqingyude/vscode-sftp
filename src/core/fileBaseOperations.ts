@@ -1,3 +1,4 @@
+import * as l10n from '@vscode/l10n';
 import { FileSystem } from './fs';
 import { window } from 'vscode';
 import { Readable } from 'stream';
@@ -56,7 +57,7 @@ export async function createFile(path: string, fs: FileSystem, option): Promise<
   try {
     await fs.lstat(path);
     logger.warn(`Can't create file becase file already exist`);
-    window.showErrorMessage(`Can't create file becase file already exist`);
+    window.showErrorMessage(l10n.t("Can't create file becase file already exist"));
     return;
   } catch (error) {
 

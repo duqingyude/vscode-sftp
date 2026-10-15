@@ -1,4 +1,5 @@
 import { COMMAND_CREATE_FOLDER } from '../constants';
+import * as l10n from '@vscode/l10n';
 import { createRemoteFolder } from '../fileHandlers';
 // import { showConfirmMessage } from '../host';
 import { checkFileCommand } from './abstract/createCommand';
@@ -19,7 +20,7 @@ export default checkFileCommand({
 */
     const result = await window.showInputBox({
         value: '',
-        prompt: 'Please input folder name',
+        prompt: l10n.t('Please input folder name'),
     });
 
 

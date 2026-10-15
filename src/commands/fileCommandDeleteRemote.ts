@@ -1,4 +1,5 @@
 import { COMMAND_DELETE_REMOTE } from '../constants';
+import * as l10n from '@vscode/l10n';
 import { upath } from '../core';
 import { removeRemote } from '../fileHandlers';
 import { showConfirmMessage } from '../host';
@@ -18,8 +19,8 @@ export default checkFileCommand({
       ? targets.map(t => upath.basename(t.fsPath)).join(',')
       : upath.basename(targets.fsPath);
     const result = await showConfirmMessage(
-      `Are you sure you want to delete '${filename}'?`,
-      'Delete',
+      l10n.t("Are you sure you want to delete '{0}'?", filename),
+      l10n.t('Delete'),
       'Cancel'
     );
 

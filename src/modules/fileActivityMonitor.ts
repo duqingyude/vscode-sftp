@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as l10n from '@vscode/l10n';
 import logger from '../logger';
 import { realpathSync } from 'fs';
 import app from '../app';
@@ -67,7 +68,11 @@ async function downloadOnOpen(uri: vscode.Uri) {
   const config = fileService.getConfig();
   if (config.downloadOnOpen) {
     if (config.downloadOnOpen === 'confirm') {
-      const isConfirm = await showConfirmMessage('Do you want SFTP to download this file?');
+      const isConfirm = await showConfirmMessage(
+        l10n.t('Do you want SFTP to download this file?'),
+        l10n.t('Yes'),
+        l10n.t('No')
+      );
       if (!isConfirm) return;
     }
 

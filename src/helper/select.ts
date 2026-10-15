@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as l10n from '@vscode/l10n';
 import { FileSystem, FileType } from '../core';
 import * as path from 'path';
 
@@ -78,7 +79,7 @@ async function showFiles<T extends FileListChildItem>(
     });
 
   const result = await vscode.window.showQuickPick(items, {
-    placeHolder: 'Select a target...',
+    placeHolder: l10n.t('Select a target...'),
   });
 
   if (result === undefined) {

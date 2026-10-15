@@ -19,6 +19,7 @@ const config = {
   externals: {
     vscode: 'commonjs vscode',
     ssh2: 'commonjs ssh2',
+    '@vscode/l10n': 'commonjs @vscode/l10n',
   },
   resolve: {
     extensions: ['.ts', '.js'],

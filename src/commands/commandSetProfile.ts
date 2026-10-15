@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as l10n from '@vscode/l10n';
 import { COMMAND_SET_PROFILE } from '../constants';
 import { showInformationMessage } from '../host';
 import app from '../app';
@@ -21,7 +22,7 @@ export default checkCommand({
         service.getAvailableProfiles().forEach(profile => {
           acc.push({
             value: profile,
-            label: app.state.profile === profile ? `${profile} (active)` : profile,
+            label: app.state.profile === profile ? l10n.t('{0} (active)', profile) : profile,
           });
         });
         return acc;
@@ -29,13 +30,13 @@ export default checkCommand({
       [
         {
           value: null,
-          label: 'UNSET',
+          label: l10n.t('UNSET'),
         },
       ]
     );
 
     if (profiles.length <= 1) {
-      showInformationMessage('No Available Profile.');
+      showInformationMessage(l10n.t('No Available Profile.'));
       return;
     }
 
@@ -50,7 +51,7 @@ export default checkCommand({
       return;
     }
 
-    const item = await vscode.window.showQuickPick(profiles, { placeHolder: 'select a profile' });
+    const item = await vscode.window.showQuickPick(profiles, { placeHolder: l10n.t('select a profile') });
     if (item === undefined) return;
     app.state.profile = item.value;
   },

@@ -1,4 +1,5 @@
 import { Uri, window } from 'vscode';
+import * as l10n from '@vscode/l10n';
 import {
   COMMAND_UPLOAD_FILE_TO_ALL_PROFILES,
   COMMAND_UPLOAD_FOLDER_TO_ALL_PROFILES,
@@ -53,7 +54,7 @@ export function createFileCommand(commandOption: FileCommandOption & { name: str
 
     protected async doCommandRun(...args) {
       if ((this.id === COMMAND_UPLOAD_FILE_TO_ALL_PROFILES || this.id === COMMAND_UPLOAD_FOLDER_TO_ALL_PROFILES) 
-        && await window.showInformationMessage('Are you sure you want to upload to all profiles?', 'Yes', 'No').then(answer => answer !== 'Yes')) {
+        && await window.showInformationMessage(l10n.t('Are you sure you want to upload to all profiles?'), l10n.t('Yes'), l10n.t('No')).then(answer => answer !== l10n.t('Yes'))) {
         return;
       }
       
@@ -87,7 +88,7 @@ export function createFileMultiCommand(commandOption: FileCommandOption & { name
 
     protected async doCommandRun(...args) {
       if ((this.id === COMMAND_UPLOAD_FILE_TO_ALL_PROFILES || this.id === COMMAND_UPLOAD_FOLDER_TO_ALL_PROFILES) 
-        && await window.showInformationMessage('Are you sure you want to upload to all profiles?', 'Yes', 'No').then(answer => answer !== 'Yes')) {
+        && await window.showInformationMessage(l10n.t('Are you sure you want to upload to all profiles?'), l10n.t('Yes'), l10n.t('No')).then(answer => answer !== l10n.t('Yes'))) {
         return;
       }
       

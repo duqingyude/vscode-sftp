@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as l10n from '@vscode/l10n';
 import { registerCommand } from '../../host';
 import {
   COMMAND_REMOTEEXPLORER_REFRESH,
@@ -42,7 +43,7 @@ export default class RemoteExplorer {
         if (uri.toString(true) == "file:///${command:sftp.sync.remoteToLocal}") {
           throw '';
         } else {
-          throw new Error(`Config Not Found. (${uri.toString(true)})`);
+          throw new Error(l10n.t('Config Not Found. ({0})', uri.toString(true)));
         }
       }
       const config = fileService.getConfig();

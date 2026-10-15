@@ -27,3 +27,6 @@ node_modules/**/deps/**/*.tlog
 !NOTICE.md
 !resources/**/*
 !schema/**/*
+!package.nls.json
+!package.nls.*.json
+!l10n/**/*

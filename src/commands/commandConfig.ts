@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as l10n from '@vscode/l10n';
 import { COMMAND_CONFIG } from '../constants';
 import { newConfig } from '../modules/config';
 import {
@@ -17,8 +18,8 @@ export default checkCommand({
     const workspaceFolders = getWorkspaceFolders();
     if (!workspaceFolders) {
       const result = await showConfirmMessage(
-        'SFTP expects to work at a folder.',
-        'Open Folder',
+        l10n.t('SFTP expects to work at a folder.'),
+        l10n.t('Open Folder'),
         'Ok'
       );
 
@@ -31,8 +32,8 @@ export default checkCommand({
 
     if (workspaceFolders.length <= 0) {
       const result = await showConfirmMessage(
-        'There are no available folders in current workspace.',
-        'Add Folder to Workspace',
+        l10n.t('There are no available folders in current workspace.'),
+        l10n.t('Add Folder to Workspace'),
         'Ok'
       );
 
@@ -67,7 +68,7 @@ export default checkCommand({
 
     vscode.window
       .showQuickPick(initDirs, {
-        placeHolder: 'Select a folder...',
+        placeHolder: l10n.t('Select a folder...'),
       })
       .then(item => {
         if (item === undefined) {

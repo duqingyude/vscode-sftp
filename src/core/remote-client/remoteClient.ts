@@ -1,3 +1,4 @@
+import * as l10n from '@vscode/l10n';
 import CustomError from '../customError';
 
 export interface ConnectOption {
@@ -55,7 +56,7 @@ export default abstract class RemoteClient {
       return this._doConnect(connectOption, config);
     }
 
-    const password = await config.askForPasswd(`[${connectOption.host}]: Enter your password`);
+    const password = await config.askForPasswd(l10n.t('[{0}]: Enter your password', connectOption.host));
 
     // cancel connect
     if (password === undefined) {

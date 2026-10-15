@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as l10n from '@vscode/l10n';
 import { COMMAND_OPEN_CONNECTION_IN_TERMINAL } from '../constants';
 import { getAllFileService } from '../modules/serviceManager';
 import { ExplorerRoot } from '../modules/remoteExplorer';
@@ -65,7 +66,7 @@ export default checkCommand({
       }
 
       const item = await vscode.window.showQuickPick(remoteItems, {
-        placeHolder: 'Select a folder...',
+        placeHolder: l10n.t('Select a folder...'),
       });
       if (item === undefined) {
         return;

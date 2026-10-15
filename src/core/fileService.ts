@@ -1,3 +1,4 @@
+import * as l10n from '@vscode/l10n';
 import { EventEmitter } from 'events';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -193,7 +194,7 @@ function mergeConfigWithExternalRefer(
     const remoteMap = getUserSetting(SETTING_KEY_REMOTE);
     const remote = remoteMap.get<Record<string, any>>(config.remote);
     if (!remote) {
-      throw new Error(`Can\'t not find remote "${config.remote}"`);
+      throw new Error(l10n.t("Can't not find remote \"{0}\"", config.remote));
     }
     const remoteKeyMapping = new Map([['scheme', 'protocol']]);
 
@@ -335,7 +336,7 @@ function getCompleteConfig(
     const evnVarName = mergedConfig.agent.slice(1);
     const val = process.env[evnVarName];
     if (!val) {
-      throw new Error(`Environment variable "${evnVarName}" not found`);
+      throw new Error(l10n.t("Environment variable \"{0}\" not found", evnVarName));
     }
     mergedConfig.agent = val;
   }

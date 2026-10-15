@@ -1,3 +1,4 @@
+import * as l10n from '@vscode/l10n';
 import * as Client from 'ftp';
 import RemoteClient, { ConnectOption } from './remoteClient';
 
@@ -60,7 +61,7 @@ export default class FTPClient extends RemoteClient {
       setTimeout(() => {
         if (!this.connected) {
           this.end();
-          reject(new Error('Timeout while connecting to server'));
+          reject(new Error(l10n.t('Timeout while connecting to server')));
         }
       }, connectTimeout);
 
