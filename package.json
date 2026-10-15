@@ -2,7 +2,7 @@
   "name": "sftp-extension",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "1.18.1",
+  "version": "1.18.2",
   "publisher": "khoazero123",
   "author": "khoazero123 (https://github.com/khoazero123)",
   "engines": {
@@ -551,6 +551,16 @@
           "command": "sftp.remoteExplorer.editInLocal",
           "group": "2_files",
           "when": "sftp.enabled && resourceScheme == remote"
+        },
+        {
+          "command": "sftp.python.runFile",
+          "group": "python@1",
+          "when": "sftp.enabled && resourcePath =~ /\\.py$/"
+        },
+        {
+          "command": "sftp.python.debugFile",
+          "group": "python@2",
+          "when": "sftp.enabled && resourcePath =~ /\\.py$/"
         }
       ],
       "editor/title": [
@@ -582,7 +592,12 @@
       "view/item/context": [
         {
           "command": "sftp.openConnectInTerminal",
-          "group": "navigation",
+          "group": "navigation@1",
+          "when": "view == remoteExplorer && viewItem == root"
+        },
+        {
+          "command": "sftp.python.selectInterpreter",
+          "group": "navigation@2",
           "when": "view == remoteExplorer && viewItem == root"
         },
         {

@@ -32,6 +32,10 @@ interface Host {
   password: string;
   remotePath: string;
   connectTimeout: number;
+  python?: {
+    interpreter?: string;
+    args?: string;
+  };
 }
 
 interface ServiceOption {
