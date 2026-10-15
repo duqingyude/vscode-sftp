@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as l10n from '@vscode/l10n';
+import * as path from 'path';
 import { Uri } from 'vscode';
 import RemoteClient from '../../core/remote-client/remoteClient';
 import { PythonInterpreterDiscovery, RemotePython } from './pythonInterpreter';
@@ -9,7 +10,7 @@ import {
   readPythonFromSftpJson,
   findWorkspaceForHost,
 } from './pythonConfig';
-import { getAllFileService } from '../serviceManager';
+import { getAllFileService, getFileService } from '../serviceManager';
 
 export interface PythonConfigForFile {
   remoteClient: RemoteClient;
@@ -126,6 +127,9 @@ export class PythonService {
       await savePythonToSftpJson(workspaceUri, config.host, config.port, entry);
       vscode.window.showInformationMessage(l10n.t('Saved interpreter to .vscode/sftp.json'));
     }
+    // Also mutate in-memory config so subsequent runs see it immediately
+    if (!config.python) config.python = {};
+    config.python.interpreter = path;
     return entry;
   }
 
@@ -167,40 +171,144 @@ export class PythonService {
 }
 
 /**
- * Public: resolve a remote URI → { fileService, config, remoteFs, client }
- * Handles multi-connection pick when needed.
+ * Compute remote path for a local file.
+ *
+ * "同级参考" 规则：本地根 和 远程根 成对出现：
+ *   - 首选 config.localPath（sftp.json 显式配置的本地根）
+ *   - 其次 FileService.baseDir（workspace folder，默认本地根）
+ *   - 兜底 文件所在目录（临时本地根，仅 filename 级映射）
+ *
+ * 相对路径统一转 POSIX 分隔符后拼到 config.remotePath 上。
+ * 若相对路径以 ".." 开头（本地文件不在当前本地根之下），
+ * 退化为「仅 basename」模式：远程路径 = remotePath + "/" + basename。
+ */
+export function localFileToRemotePath(
+  localFsPath: string,
+  config: any,
+  fileService?: any,
+): { remotePath: string; localRoot: string; strategy: 'aligned' | 'basename' } {
+  const remoteBase = (config.remotePath || '/').replace(/\/+$/, '') || '/';
+
+  // ---- 选本地根 ----
+  let localRoot = config.localPath;       // sftp.json 显式配置（推荐）
+  if (!localRoot && fileService?.baseDir) localRoot = fileService.baseDir;  // workspace folder
+  if (!localRoot) localRoot = path.dirname(localFsPath);  // 兜底：文件所在目录
+
+  // ---- 计算相对路径 ----
+  let rel = path.relative(localRoot, localFsPath).replace(/\\/g, '/');
+
+  let strategy: 'aligned' | 'basename' = 'aligned';
+  if (rel.startsWith('..') || path.isAbsolute(rel)) {
+    // 不在本地根之下 → 退化为 basename
+    rel = path.basename(localFsPath);
+    strategy = 'basename';
+  }
+
+  if (!rel) rel = path.basename(localFsPath);
+  const sep = remoteBase === '/' ? '/' : remoteBase + '/';
+  const remotePath = sep + rel;
+  return { remotePath, localRoot, strategy };
+}
+
+/**
+ * Public: resolve a remote URI → { fileService, config, remoteFs, client, remoteUri, localUri? }
+ * Handles multi-connection pick when needed. Also handles local file:// URIs
+ * (editor right-click on local files) by mapping them to their remote path.
  */
 export async function resolveRemoteContext(
   itemOrUri: any
-): Promise<{ fileService: any; config: any; remoteFs: any; client: any; remoteUri: Uri } | undefined> {
+): Promise<{ fileService: any; config: any; remoteFs: any; client: any; remoteUri: Uri; localUri?: Uri } | undefined> {
   // Case 1: Explorer item with resource.uri
   let uri: Uri | undefined;
   if (itemOrUri?.resource?.uri) uri = itemOrUri.resource.uri;
   else if (itemOrUri instanceof Uri) uri = itemOrUri;
 
   if (!uri) {
-    // No URI — let user pick connection
+    // No URI at all — let user pick connection, use remotePath as base
     const picked = pickConnection();
     if (!picked) return undefined;
     const remoteFs = await picked.fileService.getRemoteFileSystem(picked.config);
-    return { fileService: picked.fileService, config: picked.config, remoteFs, client: remoteFs.getRemoteClient(), remoteUri: Uri.parse(`remote://${picked.config.host}:${picked.config.port}${picked.config.remotePath || ''}`) };
+    const remotePath = picked.config.remotePath || '/';
+    return {
+      fileService: picked.fileService, config: picked.config, remoteFs,
+      client: remoteFs.getRemoteClient(),
+      remoteUri: Uri.parse(`remote://${picked.config.host}:${picked.config.port}${remotePath}`),
+    };
   }
 
+  // ---- Case 2: local file:// URI (editor right-click) ----
+  if (uri.scheme === 'file') {
+    // 1) 优先找 config.localPath 显式匹配
+    // 2) 其次 FileService.baseDir（workspace folder）匹配
+    let fs = getAllFileService().find(f => {
+      const cfg = f.getConfig();
+      if (cfg.protocol !== 'sftp') return false;
+      // 优先 config.localPath（sftp.json 显式配置）
+      if (cfg.localPath && uri.fsPath.startsWith(cfg.localPath)) return true;
+      // 兜底 FileService.baseDir
+      return uri.fsPath.startsWith(f.baseDir);
+    });
+
+    let pickedConfig: any;
+    if (!fs) {
+      // 没有 SFTP 配置能直接覆盖此本地文件 —— 让用户选远程节点
+      const picked = pickConnection();
+      if (!picked) return undefined;
+      fs = picked.fileService;
+      pickedConfig = picked.config;
+    }
+
+    const config = pickedConfig || fs.getConfig();
+    const remoteFs = await fs.getRemoteFileSystem(config);
+    const { remotePath, localRoot, strategy } = localFileToRemotePath(uri.fsPath, config, fs);
+
+    // 当退化为 basename 模式时，提示用户当前映射关系
+    if (strategy === 'basename') {
+      vscode.window.showInformationMessage(
+        l10n.t(
+          'Local file not under any SFTP project root. Mapping "{0}" only by filename to "{1}". Set "localPath" in .vscode/sftp.json for a precise mapping.',
+          uri.fsPath, remotePath,
+        ),
+      );
+    } else {
+      vscode.window.showInformationMessage(
+        l10n.t(
+          'Resolved: local "{0}"  ←→  remote "{1}"  (root {2} ↔ {3})',
+          uri.fsPath, remotePath, localRoot, config.remotePath || '/',
+        ),
+      );
+    }
+
+    return {
+      fileService: fs, config, remoteFs, client: remoteFs.getRemoteClient(),
+      remoteUri: Uri.parse(`remote://${config.host}:${config.port}${remotePath}`),
+      localUri: uri,
+    };
+  }
+
+  // ---- Case 3: remote:// URI (explorer item) ----
   const resolved = resolveFromRemoteUri(uri);
   if (!resolved) {
     // Fallback: let user pick
     const picked = pickConnection();
     if (!picked) return undefined;
     const remoteFs = await picked.fileService.getRemoteFileSystem(picked.config);
-    return { fileService: picked.fileService, config: picked.config, remoteFs, client: remoteFs.getRemoteClient(), remoteUri: uri };
+    return {
+      fileService: picked.fileService, config: picked.config, remoteFs,
+      client: remoteFs.getRemoteClient(), remoteUri: uri,
+    };
   }
 
   const remoteFs = await resolved.fileService.getRemoteFileSystem(resolved.config);
   return {
-    fileService: resolved.fileService,
-    config: resolved.config,
-    remoteFs,
-    client: remoteFs.getRemoteClient(),
-    remoteUri: uri,
+    fileService: resolved.fileService, config: resolved.config, remoteFs,
+    client: remoteFs.getRemoteClient(), remoteUri: uri,
   };
+}
+
+/** Find a FileService that has any baseDir under the same workspace — used when local file
+ *  is not directly under any SFTP baseDir. Falls back to pickConnection result. */
+function getLocalFsByWorkspace(fileService: any): any {
+  // Already a FileService — just return it
+  return fileService;
 }

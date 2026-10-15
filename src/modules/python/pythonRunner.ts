@@ -10,11 +10,12 @@ export function buildPythonCommand(
   args: string = ''
 ): string {
   // Escape spaces/quotes in paths for shell safety
+  const safePython = pythonPath.replace(/"/g, '\\"');
   const safeDir = remoteDir.replace(/"/g, '\\"');
   const safeFile = fileName.replace(/"/g, '\\"');
   const safeArgs = args.trim();
 
-  let cmd = `cd "${safeDir}" && "${pythonPath}" "${safeFile}"`;
+  let cmd = `cd "${safeDir}" && "${safePython}" "${safeFile}"`;
   if (safeArgs) {
     cmd += ` ${safeArgs}`;
   }

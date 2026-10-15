@@ -2,7 +2,7 @@
   "name": "sftp-extension",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "1.18.2",
+  "version": "1.18.3",
   "publisher": "khoazero123",
   "author": "khoazero123 (https://github.com/khoazero123)",
   "engines": {
@@ -526,6 +526,18 @@
           "when": "sftp.enabled && explorerResourceIsFolder"
         }
       ],
+      "explorer/context": [
+        {
+          "command": "sftp.python.runFile",
+          "group": "python@1",
+          "when": "sftp.enabled && resourcePath =~ /\\.py$/"
+        },
+        {
+          "command": "sftp.python.debugFile",
+          "group": "python@2",
+          "when": "sftp.enabled && resourcePath =~ /\\.py$/"
+        }
+      ],
       "editor/context": [
         {
           "command": "sftp.upload.file",
@@ -742,7 +754,7 @@
     "compile": "webpack --mode production",
     "dev": "webpack --mode development --watch",
     "test": "jest",
-    "package": "vsce package",
+    "package": "npm install --include=dev --no-audit --no-fund --loglevel=error && npm run compile && node ./node_modules/@vscode/vsce/vsce package && npm prune --omit=dev",
     "pub:debug": "rm -rf _debug && mkdir _debug && vsce package --out _debug/sftp-debug.vsix && cd _debug && git init && git commit --allow-empty -m 'update debug package' && git checkout -b debug-pacakge && cp ../INSTALL_DEBUG.md README.md  && git add . && git commit -am 'update debug package' && git push git@github.com:khoazero123/vscode-sftp.git debug-pacakge --force"
   },
   "devDependencies": {
@@ -791,6 +803,10 @@
       "ts",
       "js"
     ],
+    "moduleNameMapper": {
+      "^vscode$": "<rootDir>/test/helper/mockVscode.ts",
+      "^fs-extra$": "fs-extra"
+    },
     "transform": {
       "^.+\\.ts$": "<rootDir>/test/preprocessor.js"
     },

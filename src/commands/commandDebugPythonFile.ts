@@ -3,6 +3,7 @@ import * as l10n from '@vscode/l10n';
 import { COMMAND_PYTHON_DEBUG_FILE } from '../constants';
 import { PythonDebugAdapter } from '../modules/python/pythonDebugAdapter';
 import { checkCommand } from './abstract/createCommand';
+import { uploadFile } from '../fileHandlers';
 import { PythonService, resolveRemoteContext } from '../modules/python/pythonService';
 
 const service = new PythonService();
@@ -13,11 +14,41 @@ export default checkCommand({
   async handleCommand(itemOrUri?: any) {
     const ctx = await resolveRemoteContext(itemOrUri);
     if (!ctx) return;
-    const { config, client, remoteUri } = ctx;
+    const { config, client, remoteUri, remoteFs, localUri } = ctx;
 
     if (config.protocol !== 'sftp') {
       vscode.window.showWarningMessage(l10n.t('Debug Python requires SFTP protocol.'));
       return;
+    }
+
+    // ---- Check remote file exists; upload if missing ----
+    const remotePath = remoteUri.path;
+    try {
+      await remoteFs.lstat(remotePath);
+    } catch {
+      if (localUri) {
+        const remoteName = remotePath.split('/').pop() || remotePath;
+        const choice = await vscode.window.showInformationMessage(
+          l10n.t('Remote file not found: {0}. Upload and debug?', remoteName),
+          { modal: true },
+          l10n.t('Upload and Debug'),
+          l10n.t('Cancel'),
+        );
+        if (choice !== l10n.t('Upload and Debug')) return;
+        try {
+          await uploadFile(localUri);
+        } catch (e) {
+          vscode.window.showErrorMessage(
+            l10n.t('Upload failed: {0}', (e as Error).message),
+          );
+          return;
+        }
+      } else {
+        vscode.window.showWarningMessage(
+          l10n.t('Remote file not found: {0}', remotePath),
+        );
+        return;
+      }
     }
 
     const py = await service.resolveForFile(client, config, remoteUri);

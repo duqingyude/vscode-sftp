@@ -168,6 +168,11 @@
         "description": "The absolute path on remote.",
         "default": "/"
       },
+      "localPath": {
+        "type": "string",
+        "description": "Absolute path of the project root on local. Paired with remotePath as sibling roots: relative path under localPath is mirrored to remotePath. If omitted, the workspace folder is used.",
+        "default": ""
+      },
       "connectTimeout": {
         "type": "number",
         "description": "How long (in milliseconds) to wait for the connect to complete.",

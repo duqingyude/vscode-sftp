@@ -28,5 +28,38 @@
   "No client or clientOption is provided": "No client or clientOption is provided",
   "Config Not Found. ({0})": "Config Not Found. ({0})",
   "Can't find config for remote resource {0}.": "Can't find config for remote resource {0}.",
-  "Can't find remote for resource {0}.": "Can't find remote for resource {0}."
+  "Can't find remote for resource {0}.": "Can't find remote for resource {0}.",
+
+  "Run Python requires SFTP protocol.": "Run Python requires SFTP protocol.",
+  "Run arguments (space-separated)": "Run arguments (space-separated)",
+  "Leave empty for none": "Leave empty for none",
+  "Debug Python requires SFTP protocol.": "Debug Python requires SFTP protocol.",
+  "Python interpreter selection requires SFTP protocol.": "Python interpreter selection requires SFTP protocol.",
+  "No active SFTP connections.": "No active SFTP connections.",
+  "Select remote node": "Select remote node",
+  "Discovering Python interpreters on remote...": "Discovering Python interpreters on remote...",
+  "Failed to discover Python: {0}": "Failed to discover Python: {0}",
+  "Python {0}": "Python {0}",
+  "Enter path manually...": "Enter path manually...",
+  "Type a remote Python path such as /usr/bin/python3": "Type a remote Python path such as /usr/bin/python3",
+  "Select remote Python interpreter": "Select remote Python interpreter",
+  "Enter remote Python path": "Enter remote Python path",
+  "Saved interpreter to .vscode/sftp.json": "Saved interpreter to .vscode/sftp.json",
+
+  "debugpy is not installed on the remote interpreter. Install it manually: {0}": "debugpy is not installed on the remote interpreter. Install it manually: {0}",
+  "Copy command": "Copy command",
+  "Cancel": "Cancel",
+  "Copied to clipboard.": "Copied to clipboard.",
+  "Failed to start debugpy: {0}": "Failed to start debugpy: {0}",
+  "Failed to launch debug: {0}": "Failed to launch debug: {0}",
+
+  "SSH shell is only available for SFTP protocol.": "SSH shell is only available for SFTP protocol.",
+
+  "Remote file not found: {0}. Upload and run?": "Remote file not found: {0}. Upload and run?",
+  "Remote file not found: {0}. Upload and debug?": "Remote file not found: {0}. Upload and debug?",
+  "Upload and Run": "Upload and Run",
+  "Upload and Debug": "Upload and Debug",
+  "Uploaded {0} to {1}": "Uploaded {0} to {1}",
+  "Upload failed: {0}": "Upload failed: {0}",
+  "Remote file not found: {0}": "Remote file not found: {0}"
 }

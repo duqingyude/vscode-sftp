@@ -28,5 +28,41 @@
   "No client or clientOption is provided": "未提供客户端或客户端配置",
   "Config Not Found. ({0})": "找不到配置。({0})",
   "Can't find config for remote resource {0}.": "找不到远程资源 {0} 的配置。",
-  "Can't find remote for resource {0}.": "找不到资源 {0} 的 remote 配置。"
+  "Can't find remote for resource {0}.": "找不到资源 {0} 的 remote 配置。",
+
+  "Run Python requires SFTP protocol.": "运行 Python 需要 SFTP 协议。",
+  "Run arguments (space-separated)": "运行参数（以空格分隔）",
+  "Leave empty for none": "留空表示无参数",
+  "Debug Python requires SFTP protocol.": "调试 Python 需要 SFTP 协议。",
+  "Python interpreter selection requires SFTP protocol.": "选择 Python 解释器需要 SFTP 协议。",
+  "No active SFTP connections.": "没有活动的 SFTP 连接。",
+  "Select remote node": "选择远程节点",
+  "Discovering Python interpreters on remote...": "正在远程发现 Python 解释器...",
+  "Failed to discover Python: {0}": "发现 Python 解释器失败：{0}",
+  "Python {0}": "Python {0}",
+  "Enter path manually...": "手动输入路径...",
+  "Type a remote Python path such as /usr/bin/python3": "请输入远程 Python 路径，例如 /usr/bin/python3",
+  "Select remote Python interpreter": "选择远程 Python 解释器",
+  "Enter remote Python path": "请输入远程 Python 路径",
+  "Saved interpreter to .vscode/sftp.json": "已保存解释器到 .vscode/sftp.json",
+
+  "debugpy is not installed on the remote interpreter. Install it manually: {0}": "远程解释器未安装 debugpy，请手动安装：{0}",
+  "Copy command": "复制命令",
+  "Cancel": "取消",
+  "Copied to clipboard.": "已复制到剪贴板。",
+  "Failed to start debugpy: {0}": "启动 debugpy 失败：{0}",
+  "Failed to launch debug: {0}": "启动调试失败：{0}",
+
+  "SSH shell is only available for SFTP protocol.": "SSH Shell 仅适用于 SFTP 协议。",
+
+  "Remote file not found: {0}. Upload and run?": "远程文件不存在：{0}。是否上传并运行？",
+  "Remote file not found: {0}. Upload and debug?": "远程文件不存在：{0}。是否上传并调试？",
+  "Upload and Run": "上传并运行",
+  "Upload and Debug": "上传并调试",
+  "Uploaded {0} to {1}": "已上传 {0} 到 {1}",
+  "Upload failed: {0}": "上传失败：{0}",
+  "Remote file not found: {0}": "远程文件不存在：{0}",
+
+  "Local file not under any SFTP project root. Mapping \"{0}\" only by filename to \"{1}\". Set \"localPath\" in .vscode/sftp.json for a precise mapping.": "本地文件不在任何 SFTP 项目根之下。仅按文件名映射：\"{0}\" → \"{1}\"。可在 .vscode/sftp.json 中设置 \"localPath\" 以获得精确映射。",
+  "Resolved: local \"{0}\"  ←→  remote \"{1}\"  (root {2} ↔ {3})": "路径映射：本地 \"{0}\"  ←→  远程 \"{1}\"  （根目录 {2} ↔ {3}）"
 }

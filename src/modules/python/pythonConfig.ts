@@ -8,6 +8,13 @@ export interface PythonEntry {
   args?: string;
 }
 
+/** python.fileArgs: { "/remote/path/main.py": "-v", ... } */
+export interface PythonConfigField {
+  interpreter?: string;
+  args?: string;
+  fileArgs?: Record<string, string>;
+}
+
 /**
  * Resolve the sftp.json config path for a given workspace folder URI.
  */
@@ -38,8 +45,8 @@ function configMatchesHost(cfg: any, host: string, port: number): boolean {
 }
 
 /**
- * Find and update the python field in sftp.json for the given host:port.
- * Persists to disk.
+ * Persist python interpreter + global args into sftp.json for host:port.
+ * This replaces the whole python object — use updatePythonField() for partial updates.
  */
 export async function savePythonToSftpJson(
   workspaceUri: Uri,
@@ -60,20 +67,63 @@ export async function savePythonToSftpJson(
 }
 
 /**
+ * Update (or insert) a single key inside cfg.python.
+ * Pass-through for non-matching configs. Saves disk.
+ */
+export async function updatePythonField(
+  workspaceUri: Uri,
+  host: string,
+  port: number,
+  updater: (python: PythonConfigField) => void
+): Promise<void> {
+  const sftpJsonPath = resolveSftpJsonPath(workspaceUri);
+  const configs = await loadConfigs(sftpJsonPath);
+  let matched = false;
+  for (const cfg of configs) {
+    if (configMatchesHost(cfg, host, port)) {
+      if (!cfg.python) cfg.python = {};
+      updater(cfg.python);
+      matched = true;
+    }
+  }
+  if (matched) {
+    await writeConfigs(sftpJsonPath, configs);
+  }
+}
+
+/**
  * Read python field from sftp.json for the given host:port.
+ * Returns { path, args, fileArgs } — shape compatible with PythonEntry
+ * plus the optional per-file args map.
  */
 export async function readPythonFromSftpJson(
   workspaceUri: Uri,
   host: string,
   port: number
-): Promise<PythonEntry | undefined> {
+): Promise<any | undefined> {
   const configs = await loadConfigs(resolveSftpJsonPath(workspaceUri));
   for (const cfg of configs) {
     if (configMatchesHost(cfg, host, port) && cfg.python?.interpreter) {
-      return { path: cfg.python.interpreter, args: cfg.python.args };
+      const field = cfg.python;
+      const out: any = { path: field.interpreter };
+      if (field.args !== undefined) out.args = field.args;
+      if (field.fileArgs !== undefined) out.fileArgs = field.fileArgs;
+      return out;
     }
   }
   return undefined;
+}
+
+/**
+ * Look up args for a specific remote file path from cfg.python.fileArgs.
+ * Falls back to cfg.python.args (global).
+ */
+export function lookupFileArgs(pythonField: PythonConfigField | undefined, remoteFilePath: string): string {
+  if (!pythonField) return '';
+  if (pythonField.fileArgs && pythonField.fileArgs[remoteFilePath] !== undefined) {
+    return pythonField.fileArgs[remoteFilePath];
+  }
+  return pythonField.args || '';
 }
 
 /**
