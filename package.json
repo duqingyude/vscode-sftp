@@ -2,7 +2,7 @@
   "name": "sftp-extension",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "1.18.0",
+  "version": "1.18.1",
   "publisher": "khoazero123",
   "author": "khoazero123 (https://github.com/khoazero123)",
   "engines": {

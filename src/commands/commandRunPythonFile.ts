@@ -9,44 +9,54 @@ import { checkCommand } from './abstract/createCommand';
 
 const service = new PythonService();
 
-function isSftpProtocol(config: any): boolean {
-  return config.protocol === 'sftp';
-}
+/**
+ * From an ExplorerChild item (which has .resource.uri),
+ * find the matching fileService + config.
+ */
+function resolveFromExplorerChild(item: any): { fileService: any; config: any; remoteUri: vscode.Uri; fileName: string } | undefined {
+  if (!item || !item.resource) return undefined;
+  const uri: vscode.Uri = item.resource.uri;  // e.g. remote://192.168.50.243:22/usr/local/fine1fs/main.py
+  if (!uri || uri.scheme !== 'remote') return undefined;
 
-async function getClientForConfig(config: any): Promise<any> {
+  const authority = uri.authority;   // "192.168.50.243:22"
+  const [host, portStr] = authority.split(':');
+  const port = parseInt(portStr || '22', 10);
+
   const fileService = getAllFileService().find(fs => {
     const cfg = fs.getConfig();
-    return cfg.host === config.host && cfg.port === config.port;
+    return cfg.host === host && cfg.port === port;
   });
   if (!fileService) return undefined;
-  const remoteFs = (await fileService.getRemoteFileSystem(config)) as RemoteFileSystem;
-  return remoteFs.getRemoteClient();
+
+  const config = fileService.getConfig();
+  const fileName = uri.path.split('/').pop() || uri.path;
+  return { fileService, config, remoteUri: uri, fileName };
 }
 
 export default checkCommand({
   id: COMMAND_PYTHON_RUN_FILE,
 
   async handleCommand(exploreItem?: any) {
-    const config = exploreItem?.explorerContext?.config;
-    const resourcePath: string = exploreItem?.resourcePath;
-    if (!config || !isSftpProtocol(config)) {
+    const resolved = resolveFromExplorerChild(exploreItem);
+    if (!resolved) {
+      vscode.window.showWarningMessage(l10n.t('Please select a remote .py file in Remote Explorer first.'));
+      return;
+    }
+    const { fileService, config, remoteUri } = resolved;
+
+    if (config.protocol !== 'sftp') {
       vscode.window.showWarningMessage(l10n.t('Run Python requires SFTP protocol.'));
       return;
     }
-    if (!resourcePath) return;
 
-    const client = await getClientForConfig(config);
-    if (!client) {
-      vscode.window.showErrorMessage(l10n.t('No active SSH connection.'));
-      return;
-    }
+    const remoteFs = (await fileService.getRemoteFileSystem(config)) as RemoteFileSystem;
+    const client = remoteFs.getRemoteClient();
 
-    const remoteUri = vscode.Uri.parse(`remote://${config.host}:${config.port}${resourcePath}`);
-    const resolved = await service.resolveForFile(client, config, remoteUri);
-    if (!resolved) return;
+    const pyResolved = await service.resolveForFile(client, config, remoteUri);
+    if (!pyResolved) return;
 
     // Ask for args (remembered)
-    let args = resolved.interpreter.args || '';
+    let args = pyResolved.interpreter.args || '';
     const input = await vscode.window.showInputBox({
       prompt: l10n.t('Run arguments (space-separated)'),
       value: args,
@@ -56,18 +66,17 @@ export default checkCommand({
     if (input === undefined) return;  // user cancelled
     args = input.trim();
 
-    if (args !== (resolved.interpreter.args || '')) {
-      resolved.interpreter.args = args;
-      const { setInterpreter, buildProfileKey } = await import('../modules/python/pythonConfig');
-      setInterpreter(resolved.profileKey, resolved.interpreter);
+    if (args !== (pyResolved.interpreter.args || '')) {
+      pyResolved.interpreter.args = args;
+      const { setInterpreter } = await import('../modules/python/pythonConfig');
+      setInterpreter(pyResolved.profileKey, pyResolved.interpreter);
     }
 
-    // Build command + open PTY terminal
     const { buildPythonCommand } = await import('../modules/python/pythonRunner');
-    const cmd = buildPythonCommand(resolved.interpreter.path, resolved.remoteDir, resolved.fileName, args);
+    const cmd = buildPythonCommand(pyResolved.interpreter.path, pyResolved.remoteDir, pyResolved.fileName, args);
     const pty = new SshPseudoTerminal((client as any)._client, cmd);
     const terminal = vscode.window.createTerminal({
-      name: `Python: ${resolved.fileName} @ ${config.host}`,
+      name: `Python: ${pyResolved.fileName} @ ${config.host}`,
       pty,
     });
     terminal.show();
