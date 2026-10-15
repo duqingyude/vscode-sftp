@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import * as LRU from 'lru-cache';
 import StatusBarItem from './ui/statusBarItem';
 import { COMMAND_TOGGLE_OUTPUT } from './constants';
@@ -5,6 +6,7 @@ import AppState from './modules/appState';
 import RemoteExplorer from './modules/remoteExplorer';
 
 interface App {
+  context: vscode.ExtensionContext;
   fsCache: LRU.Cache<string, string>;
   state: AppState;
   sftpBarItem: StatusBarItem;

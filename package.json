@@ -2,7 +2,7 @@
   "name": "sftp-extension",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "1.17.0",
+  "version": "1.18.0",
   "publisher": "khoazero123",
   "author": "khoazero123 (https://github.com/khoazero123)",
   "engines": {
@@ -88,6 +88,23 @@
         "command": "sftp.openConnectInTerminal",
         "title": "%commands.sftp.openConnectInTerminal.title%",
         "category": "%commands.category%"
+      },
+      {
+        "command": "sftp.python.selectInterpreter",
+        "title": "%commands.sftp.python.select.title%",
+        "category": "%commands.category%"
+      },
+      {
+        "command": "sftp.python.runFile",
+        "title": "%commands.sftp.python.run.title%",
+        "category": "%commands.category%",
+        "icon": "$(play)"
+      },
+      {
+        "command": "sftp.python.debugFile",
+        "title": "%commands.sftp.python.debug.title%",
+        "category": "%commands.category%",
+        "icon": "$(debug-alt)"
       },
       {
         "command": "sftp.cancelAllTransfer",
@@ -582,6 +599,16 @@
           "command": "sftp.revealInExplorer",
           "group": "2_files",
           "when": "view == remoteExplorer && viewItem != root"
+        },
+        {
+          "command": "sftp.python.runFile",
+          "group": "python@1",
+          "when": "view == remoteExplorer && viewItem == file && resourcePath =~ /\\.py$/"
+        },
+        {
+          "command": "sftp.python.debugFile",
+          "group": "python@2",
+          "when": "view == remoteExplorer && viewItem == file && resourcePath =~ /\\.py$/"
         },
         {
           "command": "sftp.upload.folder",

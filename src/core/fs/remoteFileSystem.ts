@@ -20,6 +20,12 @@ const defaultOption: RFSOptionDefaults = {
 
 export default abstract class RemoteFileSystem extends FileSystem {
   protected client: RemoteClient;
+
+  /** Get the underlying remote client (SSHClient / FTPClient). */
+  getRemoteClient(): RemoteClient {
+    return this.client;
+  }
+
   private _remoteTimeOffsetInMilliseconds: number = 0;
   private _remoteTimeOffsetInSeconds: number = 0;
 

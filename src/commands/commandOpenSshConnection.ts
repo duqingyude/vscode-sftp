@@ -3,39 +3,9 @@ import * as l10n from '@vscode/l10n';
 import { COMMAND_OPEN_CONNECTION_IN_TERMINAL } from '../constants';
 import { getAllFileService } from '../modules/serviceManager';
 import { ExplorerRoot } from '../modules/remoteExplorer';
-import { interpolate } from '../utils';
+import RemoteFileSystem from '../core/fs/remoteFileSystem';
+import { SshPseudoTerminal } from '../core/remote-client/sshPseudoTerminal';
 import { checkCommand } from './abstract/createCommand';
-
-const isWindows = process.platform === 'win32';
-
-function shouldUseAgent(config) {
-  return typeof config.agent === 'string' && config.agent.length > 0;
-}
-
-function shouldUseKey(config) {
-  return typeof config.privateKeyPath === 'string' && config.privateKeyPath.length > 0;
-}
-
-function adaptPath(filepath) {
-  if (isWindows) {
-    return filepath.replace(/\\\\/g, '\\');
-  }
-
-  // convert to unix style
-  return filepath.replace(/\\\\/g, '/').replace(/\\/g, '/');
-}
-
-function getSshCommand(
-  config: { host: string; port: number; username: string },
-  extraOption?: string
-) {
-  let sshStr = `ssh -t ${config.username}@${config.host} -p ${config.port}`;
-  if (extraOption) {
-    sshStr += ` ${extraOption}`;
-  }
-  // sshStr += ` "cd \\"${config.workingDir}\\"; exec \\$SHELL -l"`;
-  return sshStr;
-}
 
 export default checkCommand({
   id: COMMAND_OPEN_CONNECTION_IN_TERMINAL,
@@ -45,6 +15,9 @@ export default checkCommand({
     if (exploreItem && exploreItem.explorerContext) {
       remoteConfig = exploreItem.explorerContext.config;
       if (remoteConfig.protocol !== 'sftp') {
+        vscode.window.showWarningMessage(
+          l10n.t('SSH shell is only available for SFTP protocol.')
+        );
         return;
       }
     } else {
@@ -75,31 +48,23 @@ export default checkCommand({
       remoteConfig = item.config;
     }
 
-    const sshConfig = {
-      host: remoteConfig.host,
-      port: remoteConfig.port,
-      username: remoteConfig.username,
-    };
-    const terminal = vscode.window.createTerminal(remoteConfig.name);
-    let sshCommand;
-    if (shouldUseAgent(remoteConfig)) {
-      sshCommand = getSshCommand(sshConfig);
-    } else if (shouldUseKey(remoteConfig)) {
-      sshCommand = getSshCommand(sshConfig, `-i "${adaptPath(remoteConfig.privateKeyPath)}"`);
-    } else {
-      sshCommand = getSshCommand(sshConfig);
+    // 复用 fileService 已建立的 SSH 连接
+    const fileService = getAllFileService().find(fs => {
+      const cfg = fs.getConfig();
+      return cfg.host === remoteConfig.host && cfg.port === remoteConfig.port;
+    });
+    if (!fileService) {
+      return;
     }
 
-    if (remoteConfig.sshCustomParams) {
-      sshCommand =
-        sshCommand +
-        ' ' +
-        interpolate(remoteConfig.sshCustomParams, {
-          remotePath: remoteConfig.remotePath,
-        });
-    }
+    const remoteFs = (await fileService.getRemoteFileSystem(remoteConfig)) as RemoteFileSystem;
+    const sshClient = remoteFs.getRemoteClient();
 
-    terminal.sendText(sshCommand);
+    const pty = new SshPseudoTerminal(sshClient);
+    const terminal = vscode.window.createTerminal({
+      name: `SSH: ${remoteConfig.host}`,
+      pty,
+    });
     terminal.show();
   },
 });

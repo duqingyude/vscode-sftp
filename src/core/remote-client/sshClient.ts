@@ -432,4 +432,47 @@ export default class SSHClient extends RemoteClient {
   getFsClient() {
     return this.sftp;
   }
+
+  async exec(command: string): Promise<{ stdout: string; stderr: string; exitCode: number }> {
+    return new Promise((resolve, reject) => {
+      this._client.exec(command, (err, channel) => {
+        if (err) return reject(err);
+        const chunks: Buffer[] = [];
+        const errChunks: Buffer[] = [];
+        channel.on('close', (code: number | null) => {
+          resolve({
+            stdout: Buffer.concat(chunks).toString('utf8'),
+            stderr: Buffer.concat(errChunks).toString('utf8'),
+            exitCode: code ?? 0,
+          });
+        });
+        channel.on('data', (d: Buffer) => chunks.push(d));
+        channel.stderr.on('data', (d: Buffer) => errChunks.push(d));
+      });
+    });
+  }
+
+  async shell(initialCommand?: string, ptyOptions?: { cols: number; rows: number }): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this._client.shell(ptyOptions ?? { cols: 80, rows: 24 }, (err, channel) => {
+        if (err) return reject(err);
+        if (initialCommand) {
+          channel.write(initialCommand + '\n');
+        }
+        resolve(channel);
+      });
+    });
+  }
+
+  async forwardOut(
+    localHost: string, localPort: number,
+    remoteHost: string, remotePort: number
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this._client.forwardOut(localHost, localPort, remoteHost, remotePort, (err, stream) => {
+        if (err) return reject(err);
+        resolve(stream);
+      });
+    });
+  }
 }
